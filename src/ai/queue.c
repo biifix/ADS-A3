@@ -60,8 +60,16 @@ int applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char
     int prev_x = current_state->piece_x[move_piece - '0'];
     int prev_y = current_state->piece_y[move_piece - '0'];
 
+    // Duplicate first to avoid modifying current_state
     *new_state = duplicate_state(current_state);
-    **new_state = move_location(**new_state, move_piece, move_direction);
+    // Apply move to duplicate (returns by value with modified fields)
+    gate_t temp = move_location(**new_state, move_piece, move_direction);
+    // Copy back only the scalar fields to avoid memory leak
+    (*new_state)->player_x = temp.player_x;
+    (*new_state)->player_y = temp.player_y;
+    // Note: map pointers are same, so map contents are already updated by move_location
+    memcpy((*new_state)->piece_x, temp.piece_x, sizeof(int) * (*new_state)->num_pieces);
+    memcpy((*new_state)->piece_y, temp.piece_y, sizeof(int) * (*new_state)->num_pieces);
 
     int old_len;
     if (current_state->soln == NULL) {

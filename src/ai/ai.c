@@ -248,7 +248,12 @@ void algo1(gate_t *init_data) {
 		free_state(current_state, init_data);
 	}
 
-	// Free remaining queue
+	// Free remaining states in queue (if solution was found early)
+	while (!is_empty_queue(queue)) {
+		gate_t* remaining_state = dequeue(queue);
+		free_state(remaining_state, init_data);
+	}
+	// Free remaining queue structure
 	free_queue(queue);
 
 	/* Output statistics */
