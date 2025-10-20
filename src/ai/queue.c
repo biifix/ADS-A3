@@ -63,8 +63,13 @@ int applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char
     *new_state = duplicate_state(current_state);
     **new_state = move_location(**new_state, move_piece, move_direction);
 
+    int old_len;
+    if (current_state->soln == NULL) {
+        old_len = 0;
+    } else {
+        old_len = strlen(current_state->soln);
+    }
     //apply action to the new state
-    int old_len = strlen((*new_state)->soln);
     (*new_state)->soln = realloc((*new_state)->soln, old_len + MOVE_LENGTH); // 2 is the length of the move_piece and move_direction
     (*new_state)->soln[old_len] = move_piece;
     (*new_state)->soln[old_len + 1] = move_direction;

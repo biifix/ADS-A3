@@ -303,7 +303,9 @@ void algo1(gate_t *init_data) {
 	}
 	/* Free initial map. */
 	free_initial_state(init_data);
+	free_queue(queue);
 }
+
 void algo2(gate_t *init_data) {
 	/* Location for packedMap. */
 	int packedBytes = getPackedSize(init_data);
