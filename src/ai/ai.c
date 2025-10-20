@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include "ai.h"
-#include "gate.h"
+#include "../../include/gate.h"
 #include "radix.h"
 #include "utils.h"
 
@@ -43,8 +43,51 @@ gate_t* duplicate_state(gate_t* gate) {
 	/*
 	Hint: copy the src state as well as the dynamically allocated map and solution
 	*/
-	return duplicate;
+	assert(duplicate);
+	duplicate -> lines = gate->lines;
+	duplicate -> player_x = gate->player_x;
+	duplicate -> player_y = gate->player_y;
+	duplicate -> num_pieces = gate->num_pieces;
+	duplicate -> num_chars_map = gate->num_chars_map;
+	
+	duplicate -> map = malloc(sizeof(char *) * gate->lines);
+	assert(duplicate -> map);
+	duplicate -> map_save = malloc(sizeof(char *) * gate->lines);
+	assert(duplicate -> map_save);
 
+
+	// copy map and map_save
+	for (int i = 0; i < gate->lines; i++) {
+		
+		duplicate -> map[i] = malloc(sizeof(char) * gate->num_chars_map);
+		assert(duplicate -> map[i]);
+		duplicate -> map_save[i] = malloc(sizeof(char) * gate->num_chars_map);
+		assert(duplicate -> map_save[i]);
+
+		memcpy(duplicate -> map[i], gate->map[i], gate->num_chars_map);
+		memcpy(duplicate -> map_save[i], gate->map_save[i], gate->num_chars_map);
+
+	}
+
+	// Copy piece positions
+	memcpy(duplicate -> piece_x, gate->piece_x, gate->num_pieces);
+	memcpy(duplicate -> piece_y, gate->piece_y, gate->num_pieces);
+
+	// Copy solution
+	if (gate->soln == NULL || strlen(gate->soln) == 0) {
+		// Empty solution case (initial state)
+		duplicate->soln = malloc(sizeof(char));
+		assert(duplicate->soln);
+		duplicate->soln[0] = '\0';
+	} else {
+		// Non-empty solution case
+		size_t soln_len = strlen(gate->soln);
+		duplicate->soln = malloc(sizeof(char) * (soln_len + 1));  // +1 for null terminator
+		assert(duplicate->soln);
+		strcpy(duplicate->soln, gate->soln);  // strcpy handles null terminator
+	}
+
+	return duplicate;
 }
 
 /**
