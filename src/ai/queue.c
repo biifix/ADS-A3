@@ -54,3 +54,9 @@ void free_queue(queue_t *queue) {
     }
     free(queue);
 }
+
+applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char move_direction) {
+    int prev_x = current_state->piece_x[(int)move_piece];
+    int prev_y = current_state->piece_y[(int)move_piece];
+    *new_state = duplicate_state(current_state);
+}

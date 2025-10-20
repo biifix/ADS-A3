@@ -1,5 +1,7 @@
-#include "gate.h"
+#ifndef AI_QUEUE_H
+#define AI_QUEUE_H
 
+#include "../../include/gate.h"
 
 typedef gate_t *data_t;
 
@@ -21,4 +23,6 @@ data_t dequeue(queue_t *queue);
 data_t peek(queue_t *queue);
 int is_empty_queue(queue_t *queue);
 void free_queue(queue_t *queue);
+
+#endif // AI_QUEUE_H
 
