@@ -6,5 +6,6 @@
 #include "../../include/gate.h"
 
 void solve(char const *path);
+gate_t* duplicate_state(gate_t* gate);
 
 #endif

@@ -6,7 +6,7 @@
 ##
 
 #CC	=	gcc -Wall -Wextra -O3 -g
-CC	=	gcc -Wall -Wextra -g
+CC	=	gcc-15 -Wall -Wextra -g
 
 
 RM	=	rm -f
@@ -26,6 +26,7 @@ SRC	=	src/main.c	\
 		lib/my_putstr.c	\
 		src/ai/radix.o \
 		src/ai/ai.o \
+		src/ai/queue.o \
 		src/ai/utils.o
 
 CFLAGS	+=	-I./include/

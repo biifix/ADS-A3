@@ -2,6 +2,9 @@
 #define AI_QUEUE_H
 
 #include "../../include/gate.h"
+#include "ai.h"
+
+#define MOVE_LENGTH 2
 
 typedef gate_t *data_t;
 
@@ -15,7 +18,7 @@ typedef struct {
     queue_node_t *food;
 } queue_t;
 
-applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char move_direction);
+int applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char move_direction);
 
 queue_t *make_empty_queue(void);
 void enqueue(queue_t *queue, data_t data);

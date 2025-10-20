@@ -1,6 +1,7 @@
 #include "queue.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 queue_t *make_empty_queue(void) {
     queue_t *queue = (queue_t *)malloc(sizeof(queue_t));
@@ -55,8 +56,24 @@ void free_queue(queue_t *queue) {
     free(queue);
 }
 
-applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char move_direction) {
-    int prev_x = current_state->piece_x[(int)move_piece];
-    int prev_y = current_state->piece_y[(int)move_piece];
+int applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char move_direction) {
+    int prev_x = current_state->piece_x[move_piece - '0'];
+    int prev_y = current_state->piece_y[move_piece - '0'];
+
     *new_state = duplicate_state(current_state);
+    **new_state = move_location(**new_state, move_piece, move_direction);
+
+    //apply action to the new state
+    int old_len = strlen((*new_state)->soln);
+    (*new_state)->soln = realloc((*new_state)->soln, old_len + MOVE_LENGTH); // 2 is the length of the move_piece and move_direction
+    (*new_state)->soln[old_len] = move_piece;
+    (*new_state)->soln[old_len + 1] = move_direction;
+    (*new_state)->soln[old_len + 2] = '\0';
+
+    // determind if new state changed x or y of the piece, return 1 if moved, 0 if not
+    if ((*new_state)->piece_x[move_piece - '0'] != prev_x || (*new_state)->piece_y[move_piece - '0'] != prev_y) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
