@@ -313,60 +313,6 @@ void algo1(gate_t *init_data) {
 
 void algo2(gate_t *init_data) {
 	/* Location for packedMap. */
-	int packedBytes = getPackedSize(init_data);
-	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
-	assert(packedMap);
-
-	bool has_won = false;
-	int dequeued = 0;
-	int enqueued = 0;
-	int duplicatedNodes = 0;
-	char *soln = "";
-	double start = now();
-	double elapsed;
-	
-	// Algorithm 1 is a width n + 1 search
-	int w = init_data->num_pieces + 1;
-
-	/*
-	 * FILL IN: Algorithm 1 - 3.
-	 */
-
-	/* Output statistics */
-	elapsed = now() - start;
-	printf("Solution path: ");
-	printf("%s\n", soln);
-	printf("Execution time: %lf\n", elapsed);
-	printf("Expanded nodes: %d\n", dequeued);
-	printf("Generated nodes: %d\n", enqueued);
-	printf("Duplicated nodes: %d\n", duplicatedNodes);
-	int memoryUsage = 0;
-	// Algorithm 2: Memory usage, uncomment to add.
-	// memoryUsage += queryRadixMemoryUsage(radixTree);
-	// Algorithm 3: Memory usage, uncomment to add.
-	// for(int i = 0; i < w; i++) {
-	//	memoryUsage += queryRadixMemoryUsage(rts[i]);
-	// }
-	printf("Auxiliary memory usage (bytes): %d\n", memoryUsage);
-	printf("Number of pieces in the puzzle: %d\n", init_data->num_pieces);
-	printf("Number of steps in solution: %ld\n", strlen(soln)/2);
-	int emptySpaces = 0;
-	/*
-	 * FILL IN: Add empty space check for your solution.
-	 */
-	
-	printf("Number of empty spaces: %d\n", emptySpaces);
-	printf("Solved by IW(%d)\n", w);
-	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
-
-	/* Free associated memory. */
-	if(packedMap) {
-		free(packedMap);
-	}
-	/* Free initial map. */
-	free_initial_state(init_data);
-}
-void algo3(gate_t *init_data) {
 	/* Location for packedMap. */
 	int packedBytes = getPackedSize(init_data);
 	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
@@ -377,6 +323,7 @@ void algo3(gate_t *init_data) {
 	int enqueued = 0;
 	int duplicatedNodes = 0;
 	char *soln = "";
+	gate_t* solution_state = NULL;
 	double start = now();
 	double elapsed;
 	
@@ -386,6 +333,88 @@ void algo3(gate_t *init_data) {
 	/*
 	 * FILL IN: Algorithm 1 - 3.
 	 */
+
+	gate_t* duplicate = duplicate_state(init_data);
+	int num_pieces = init_data->num_pieces;
+	queue_t* queue = make_empty_queue();
+	enqueue(queue, duplicate);
+	enqueued++;
+
+	// create a radix tree
+	struct radixTree* radixTree = NULL;
+	int treeHeight = init_data->lines;
+	int treeWidth = init_data->num_chars_map / init_data->lines;
+	radixTree = getNewRadixTree(num_pieces, treeHeight, treeWidth);
+	assert(radixTree);
+
+	// Insert initial state into radix tree
+	packMap(duplicate, packedMap);
+	insertRadixTree(radixTree, packedMap, num_pieces);
+
+	while (!is_empty_queue(queue)) {
+		gate_t* current_state = dequeue(queue);
+		dequeued++;
+
+		// Check if winning condition
+		if (winning_state(*current_state)) {
+			// Found a solution - save the winning state and solution string
+			if (current_state->soln) {
+				size_t soln_len = strlen(current_state->soln);
+				char *solution_copy = (char *)malloc(soln_len + 1);
+				assert(solution_copy);
+				strcpy(solution_copy, current_state->soln);
+				soln = solution_copy;
+			}
+			solution_state = current_state;
+			has_won = true;
+			break;
+		}
+
+		// Try all moves for all pieces
+		for (int piece = 0; piece < num_pieces; piece++) {
+			for (int direction = 0; direction < 4; direction++) {
+				gate_t* new_state = NULL;
+				int pieceMoved = applyAction(current_state, &new_state, pieceNames[piece], directions[direction]);
+
+				if (!pieceMoved) {
+					// Move failed, free the node and continue
+					if (new_state) {
+						free_state( new_state, init_data);
+					}
+					continue;
+				}
+
+				// Count generated nodes (only for successful moves)
+				enqueued++;
+
+				// packmap
+				packMap(new_state, packedMap);
+				if (checkPresent(radixTree, packedMap, num_pieces) == PRESENT) {
+					duplicatedNodes++;
+					// State already in tree, free the node and continue
+					if (new_state) {
+						free_state(new_state, init_data);
+					}
+					continue;
+				}
+				insertRadixTree(radixTree, packedMap, num_pieces);
+
+				// Successfully moved, enqueue the new state
+				enqueue(queue, new_state);
+			}
+		}
+
+		// Free current state after processing
+		free_state(current_state, init_data);
+	}
+
+	// Free remaining states in queue (if solution was found early)
+	while (!is_empty_queue(queue)) {
+		gate_t* remaining_state = dequeue(queue);
+		free_state(remaining_state, init_data);
+	}
+	// Free remaining queue structure
+	free_queue(queue);
 
 	/* Output statistics */
 	elapsed = now() - start;
@@ -397,7 +426,7 @@ void algo3(gate_t *init_data) {
 	printf("Duplicated nodes: %d\n", duplicatedNodes);
 	int memoryUsage = 0;
 	// Algorithm 2: Memory usage, uncomment to add.
-	// memoryUsage += queryRadixMemoryUsage(radixTree);
+	memoryUsage += queryRadixMemoryUsage(radixTree);
 	// Algorithm 3: Memory usage, uncomment to add.
 	// for(int i = 0; i < w; i++) {
 	//	memoryUsage += queryRadixMemoryUsage(rts[i]);
@@ -409,7 +438,18 @@ void algo3(gate_t *init_data) {
 	/*
 	 * FILL IN: Add empty space check for your solution.
 	 */
-	
+	if (solution_state) {
+		int map_width = solution_state->num_chars_map / solution_state->lines;
+		int map_height = solution_state->lines;
+		for (int row = 0; row < map_height; row++) {
+			for (int col = 0; col < map_width; col++) {
+				if (solution_state->map[row][col] == ' ') {
+					emptySpaces++;
+				}
+			}
+		}
+	}
+
 	printf("Number of empty spaces: %d\n", emptySpaces);
 	printf("Solved by IW(%d)\n", w);
 	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
@@ -417,6 +457,18 @@ void algo3(gate_t *init_data) {
 	/* Free associated memory. */
 	if(packedMap) {
 		free(packedMap);
+	}
+	/* Free radix tree */
+	if(radixTree) {
+		freeRadixTree(radixTree);
+	}
+	/* Free solution state */
+	if(solution_state) {
+		free_state(solution_state, init_data);
+	}
+	/* Free solution string copy if allocated */
+	if(soln && strlen(soln) > 0) {
+		free((void*)soln);
 	}
 	/* Free initial map. */
 	free_initial_state(init_data);
@@ -426,10 +478,10 @@ void algo3(gate_t *init_data) {
  * Find a solution by exploring all possible paths
  */
 void find_solution(gate_t* init_data) {
-	algo1(init_data);
-	// algo2(init_data);
+	// algo1(init_data);
+	algo2(init_data);
 	// algo3(init_data);
-	
+
 }
 
 /**

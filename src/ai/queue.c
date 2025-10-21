@@ -78,7 +78,7 @@ int applyAction(gate_t *current_state, gate_t **new_state, char move_piece, char
         old_len = strlen(current_state->soln);
     }
     //apply action to the new state
-    (*new_state)->soln = realloc((*new_state)->soln, old_len + MOVE_LENGTH); // 2 is the length of the move_piece and move_direction
+    (*new_state)->soln = realloc((*new_state)->soln, old_len + MOVE_LENGTH + 1); // +1 for null terminator
     (*new_state)->soln[old_len] = move_piece;
     (*new_state)->soln[old_len + 1] = move_direction;
     (*new_state)->soln[old_len + 2] = '\0';
