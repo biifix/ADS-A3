@@ -178,40 +178,60 @@ void free_initial_state(gate_t *init_data) {
 	}
 }
 
+/**
+ * Algorithm 1: Breadth-First Search (BFS) without duplicate detection
+ *
+ * This is a naive IW(n+1) search that explores all possible game states
+ * using breadth-first search. It does NOT check for duplicate states,
+ * making it memory-efficient but potentially slow on complex puzzles.
+ *
+ * Key characteristics:
+ * - Explores states level-by-level (guarantees shortest path)
+ * - No duplicate detection (may revisit states)
+ * - Minimal auxiliary memory usage (only queue)
+ * - Suitable for simple puzzles with few states
+ */
 void algo1(gate_t *init_data) {
-	/* Location for packedMap. */
+	/* ===== INITIALIZATION ===== */
+
+	/* Allocate buffer for packed state representation (unused in algo1, but kept for consistency) */
 	int packedBytes = getPackedSize(init_data);
 	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
 	assert(packedMap);
 
-	bool has_won = false;
-	int dequeued = 0;
-	int enqueued = 0;
-	int duplicatedNodes = 0;
-	char *soln = "";
+	/* Statistics tracking variables */
+	bool has_won = false;           // Whether a solution was found
+	int dequeued = 0;                // Number of states expanded (removed from queue)
+	int enqueued = 0;                // Number of states generated (successfully created)
+	int duplicatedNodes = 0;         // Always 0 for algo1 (no duplicate detection)
+	char *soln = NULL;               // Solution path string (e.g., "0u1d2l")
+	gate_t* solution_state = NULL;   // The winning state (kept for empty space counting)
+
+	/* Timing */
 	double start = now();
 	double elapsed;
-	
-	// Algorithm 1 is a width n + 1 search
+
+	/* Search width: n+1 where n is number of pieces */
 	int w = init_data->num_pieces + 1;
 
-	/*
-	 * FILL IN: Algorithm 1 - 3.
-	 */
+	/* ===== SEARCH INITIALIZATION ===== */
 
+	/* Create initial state and queue */
 	gate_t* duplicate = duplicate_state(init_data);
 	int num_pieces = init_data->num_pieces;
 	queue_t* queue = make_empty_queue();
 	enqueue(queue, duplicate);
-	gate_t* solution_state = NULL;
+
+	/* ===== BREADTH-FIRST SEARCH LOOP ===== */
 
 	while (!is_empty_queue(queue)) {
+		/* Remove next state from queue for exploration */
 		gate_t* current_state = dequeue(queue);
 		dequeued++;
 
-		// Check if winning condition
+		/* Check if we've reached a winning state */
 		if (winning_state(*current_state)) {
-			// Found a solution - save the winning state and solution string
+			/* Save the solution path and winning state */
 			if (current_state->soln) {
 				size_t soln_len = strlen(current_state->soln);
 				char *solution_copy = (char *)malloc(soln_len + 1);
@@ -224,220 +244,60 @@ void algo1(gate_t *init_data) {
 			break;
 		}
 
-		// Try all moves for all pieces
+		/* Generate all possible successor states by trying all piece moves */
 		for (int piece = 0; piece < num_pieces; piece++) {
 			for (int direction = 0; direction < 4; direction++) {
 				gate_t* new_state = NULL;
-				int pieceMoved = applyAction(current_state, &new_state, pieceNames[piece], directions[direction]);
-				enqueued++;
+
+				/* Attempt to move piece in specified direction */
+				int pieceMoved = applyAction(current_state, &new_state,
+				                             pieceNames[piece], directions[direction]);
 
 				if (!pieceMoved) {
-					// Move failed, free the node and continue
-					if (new_state) {
-						free_state( new_state, init_data);
-					}
-					continue;
-				}
-
-				// Successfully moved, enqueue the new state
-				enqueue(queue, new_state);
-			}
-		}
-
-		// Free current state after processing
-		free_state(current_state, init_data);
-	}
-
-	// Free remaining states in queue (if solution was found early)
-	while (!is_empty_queue(queue)) {
-		gate_t* remaining_state = dequeue(queue);
-		free_state(remaining_state, init_data);
-	}
-	// Free remaining queue structure
-	free_queue(queue);
-
-	/* Output statistics */
-	elapsed = now() - start;
-	printf("Solution path: ");
-	printf("%s\n", soln);
-	printf("Execution time: %lf\n", elapsed);
-	printf("Expanded nodes: %d\n", dequeued);
-	printf("Generated nodes: %d\n", enqueued);
-	printf("Duplicated nodes: %d\n", duplicatedNodes);
-	int memoryUsage = 0;
-	// Algorithm 2: Memory usage, uncomment to add.
-	// memoryUsage += queryRadixMemoryUsage(radixTree);
-	// Algorithm 3: Memory usage, uncomment to add.
-	// for(int i = 0; i < w; i++) {
-	//	memoryUsage += queryRadixMemoryUsage(rts[i]);
-	// }
-	printf("Auxiliary memory usage (bytes): %d\n", memoryUsage);
-	printf("Number of pieces in the puzzle: %d\n", init_data->num_pieces);
-	printf("Number of steps in solution: %ld\n", strlen(soln)/2);
-	int emptySpaces = 0;
-	/*
-	 * FILL IN: Add empty space check for your solution.
-	 */
-	if (solution_state) {
-		int map_width = solution_state->num_chars_map / solution_state->lines;
-		int map_height = solution_state->lines;
-		for (int row = 0; row < map_height; row++) {
-			for (int col = 0; col < map_width; col++) {
-				if (solution_state->map[row][col] == ' ') {
-					emptySpaces++;
-				}
-			}
-		}
-	}
-
-	printf("Number of empty spaces: %d\n", emptySpaces);
-	printf("Solved by IW(%d)\n", w);
-	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
-
-	/* Free associated memory. */
-	if(packedMap) {
-		free(packedMap);
-	}
-	/* Free solution state */
-	if(solution_state) {
-		free_state(solution_state, init_data);
-	}
-	/* Free solution string copy if allocated */
-	if(soln && strlen(soln) > 0) {
-		free((void*)soln);
-	}
-	/* Free initial map. */
-	free_initial_state(init_data);
-	free_queue(queue);
-}
-
-void algo2(gate_t *init_data) {
-	/* Location for packedMap. */
-	/* Location for packedMap. */
-	int packedBytes = getPackedSize(init_data);
-	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
-	assert(packedMap);
-
-	bool has_won = false;
-	int dequeued = 0;
-	int enqueued = 0;
-	int duplicatedNodes = 0;
-	char *soln = "";
-	gate_t* solution_state = NULL;
-	double start = now();
-	double elapsed;
-	
-	// Algorithm 1 is a width n + 1 search
-	int w = init_data->num_pieces + 1;
-
-	/*
-	 * FILL IN: Algorithm 1 - 3.
-	 */
-
-	gate_t* duplicate = duplicate_state(init_data);
-	int num_pieces = init_data->num_pieces;
-	queue_t* queue = make_empty_queue();
-	enqueue(queue, duplicate);
-	enqueued++;
-
-	// create a radix tree
-	struct radixTree* radixTree = NULL;
-	int treeHeight = init_data->lines;
-	int treeWidth = init_data->num_chars_map / init_data->lines;
-	radixTree = getNewRadixTree(num_pieces, treeHeight, treeWidth);
-	assert(radixTree);
-
-	// Insert initial state into radix tree
-	packMap(duplicate, packedMap);
-	insertRadixTree(radixTree, packedMap, num_pieces);
-
-	while (!is_empty_queue(queue)) {
-		gate_t* current_state = dequeue(queue);
-		dequeued++;
-
-		// Check if winning condition
-		if (winning_state(*current_state)) {
-			// Found a solution - save the winning state and solution string
-			if (current_state->soln) {
-				size_t soln_len = strlen(current_state->soln);
-				char *solution_copy = (char *)malloc(soln_len + 1);
-				assert(solution_copy);
-				strcpy(solution_copy, current_state->soln);
-				soln = solution_copy;
-			}
-			solution_state = current_state;
-			has_won = true;
-			break;
-		}
-
-		// Try all moves for all pieces
-		for (int piece = 0; piece < num_pieces; piece++) {
-			for (int direction = 0; direction < 4; direction++) {
-				gate_t* new_state = NULL;
-				int pieceMoved = applyAction(current_state, &new_state, pieceNames[piece], directions[direction]);
-
-				if (!pieceMoved) {
-					// Move failed, free the node and continue
-					if (new_state) {
-						free_state( new_state, init_data);
-					}
-					continue;
-				}
-
-				// Count generated nodes (only for successful moves)
-				enqueued++;
-
-				// packmap
-				packMap(new_state, packedMap);
-				if (checkPresent(radixTree, packedMap, num_pieces) == PRESENT) {
-					duplicatedNodes++;
-					// State already in tree, free the node and continue
+					/* Move invalid (blocked by wall/piece or out of bounds) */
 					if (new_state) {
 						free_state(new_state, init_data);
 					}
 					continue;
 				}
-				insertRadixTree(radixTree, packedMap, num_pieces);
 
-				// Successfully moved, enqueue the new state
+				/* Move successful - count as generated node and add to queue */
+				enqueued++;
 				enqueue(queue, new_state);
 			}
 		}
 
-		// Free current state after processing
+		/* Free current state after exploring all its successors */
 		free_state(current_state, init_data);
 	}
 
-	// Free remaining states in queue (if solution was found early)
+	/* ===== CLEANUP REMAINING QUEUE STATES ===== */
+
+	/* If solution found early, free all unexplored states still in queue */
 	while (!is_empty_queue(queue)) {
 		gate_t* remaining_state = dequeue(queue);
 		free_state(remaining_state, init_data);
 	}
-	// Free remaining queue structure
 	free_queue(queue);
 
-	/* Output statistics */
+	/* ===== OUTPUT STATISTICS ===== */
+
 	elapsed = now() - start;
 	printf("Solution path: ");
-	printf("%s\n", soln);
+	printf("%s\n", soln ? soln : "");
 	printf("Execution time: %lf\n", elapsed);
 	printf("Expanded nodes: %d\n", dequeued);
 	printf("Generated nodes: %d\n", enqueued);
 	printf("Duplicated nodes: %d\n", duplicatedNodes);
+
+	/* Auxiliary memory is zero for algo1 (no radix tree) */
 	int memoryUsage = 0;
-	// Algorithm 2: Memory usage, uncomment to add.
-	memoryUsage += queryRadixMemoryUsage(radixTree);
-	// Algorithm 3: Memory usage, uncomment to add.
-	// for(int i = 0; i < w; i++) {
-	//	memoryUsage += queryRadixMemoryUsage(rts[i]);
-	// }
 	printf("Auxiliary memory usage (bytes): %d\n", memoryUsage);
 	printf("Number of pieces in the puzzle: %d\n", init_data->num_pieces);
-	printf("Number of steps in solution: %ld\n", strlen(soln)/2);
+	printf("Number of steps in solution: %ld\n", soln ? strlen(soln)/2 : 0);
+
+	/* Count empty spaces in final solution state */
 	int emptySpaces = 0;
-	/*
-	 * FILL IN: Add empty space check for your solution.
-	 */
 	if (solution_state) {
 		int map_width = solution_state->num_chars_map / solution_state->lines;
 		int map_height = solution_state->lines;
@@ -454,80 +314,297 @@ void algo2(gate_t *init_data) {
 	printf("Solved by IW(%d)\n", w);
 	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
 
-	/* Free associated memory. */
-	if(packedMap) {
+	/* ===== FREE ALL ALLOCATED MEMORY ===== */
+
+	if (packedMap) {
 		free(packedMap);
 	}
-	/* Free radix tree */
-	if(radixTree) {
-		freeRadixTree(radixTree);
-	}
-	/* Free solution state */
-	if(solution_state) {
+	if (solution_state) {
 		free_state(solution_state, init_data);
 	}
-	/* Free solution string copy if allocated */
-	if(soln && strlen(soln) > 0) {
+	if (soln) {
 		free((void*)soln);
 	}
-	/* Free initial map. */
 	free_initial_state(init_data);
 }
 
-void algo3(gate_t *init_data) {
-	/* Location for packedMap. */
+/**
+ * Algorithm 2: BFS with Radix Tree Duplicate Detection
+ *
+ * This is an optimized IW(n+1) search that uses a radix tree to detect
+ * and eliminate duplicate states. It explores the state space more efficiently
+ * than Algorithm 1 by avoiding revisiting previously seen states.
+ *
+ * Key characteristics:
+ * - Explores states level-by-level (guarantees shortest path)
+ * - Uses radix tree for O(1) duplicate detection
+ * - Significantly reduces redundant state exploration
+ * - Higher memory usage due to radix tree storage
+ * - Suitable for medium complexity puzzles
+ *
+ * Radix tree implementation:
+ * - Stores bit-packed state representations (piece positions)
+ * - Enables fast lookup/insertion of visited states
+ * - Memory grows with number of unique states explored
+ */
+void algo2(gate_t *init_data) {
+	/* ===== INITIALIZATION ===== */
+
+	/* Allocate buffer for bit-packed state representation */
 	int packedBytes = getPackedSize(init_data);
 	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
 	assert(packedMap);
 
-	bool has_won = false;
-	int dequeued = 0;
-	int enqueued = 0;
-	int duplicatedNodes = 0;
-	char *soln = "";
-	gate_t* solution_state = NULL;
+	/* Statistics tracking variables */
+	bool has_won = false;           // Whether a solution was found
+	int dequeued = 0;                // Number of states expanded (removed from queue)
+	int enqueued = 0;                // Number of unique states generated (not duplicates)
+	int duplicatedNodes = 0;         // Number of duplicate states detected and pruned
+	char *soln = NULL;               // Solution path string (e.g., "0u1d2l")
+	gate_t* solution_state = NULL;   // The winning state (kept for empty space counting)
+
+	/* Timing */
 	double start = now();
 	double elapsed;
 
+	/* Search width: n+1 where n is number of pieces */
+	int w = init_data->num_pieces + 1;
+
+	/* ===== DUPLICATE DETECTION SETUP ===== */
+
+	/* Create radix tree for tracking visited states */
 	int num_pieces = init_data->num_pieces;
 	int treeHeight = init_data->lines;
 	int treeWidth = init_data->num_chars_map / init_data->lines;
-	int solved_width = 0;  // Track which width solved the puzzle
+	struct radixTree* radixTree = getNewRadixTree(num_pieces, treeHeight, treeWidth);
+	assert(radixTree);
 
-	/*
-	 * FILL IN: Algorithm 3 - Novelty optimization with multiple radix trees
-	 */
+	/* ===== SEARCH INITIALIZATION ===== */
 
-	// Outer loop: iterate through widths from 1 to numPieces
-	for (int w = 1; w <= num_pieces; w++) {
-		// Create array of w radix trees for novelty checking
+	/* Create initial state and queue */
+	gate_t* duplicate = duplicate_state(init_data);
+	queue_t* queue = make_empty_queue();
+	enqueue(queue, duplicate);
+	enqueued++;  // Count initial state as generated
+
+	/* Insert initial state into radix tree to mark as visited */
+	packMap(duplicate, packedMap);
+	insertRadixTree(radixTree, packedMap, num_pieces);
+
+	/* ===== BREADTH-FIRST SEARCH LOOP WITH DUPLICATE PRUNING ===== */
+
+	while (!is_empty_queue(queue)) {
+		/* Remove next state from queue for exploration */
+		gate_t* current_state = dequeue(queue);
+		dequeued++;
+
+		/* Check if we've reached a winning state */
+		if (winning_state(*current_state)) {
+			/* Save the solution path and winning state */
+			if (current_state->soln) {
+				size_t soln_len = strlen(current_state->soln);
+				char *solution_copy = (char *)malloc(soln_len + 1);
+				assert(solution_copy);
+				strcpy(solution_copy, current_state->soln);
+				soln = solution_copy;
+			}
+			solution_state = current_state;
+			has_won = true;
+			break;
+		}
+
+		/* Generate all possible successor states by trying all piece moves */
+		for (int piece = 0; piece < num_pieces; piece++) {
+			for (int direction = 0; direction < 4; direction++) {
+				gate_t* new_state = NULL;
+
+				/* Attempt to move piece in specified direction */
+				int pieceMoved = applyAction(current_state, &new_state,
+				                             pieceNames[piece], directions[direction]);
+
+				if (!pieceMoved) {
+					/* Move invalid (blocked by wall/piece or out of bounds) */
+					if (new_state) {
+						free_state(new_state, init_data);
+					}
+					continue;
+				}
+
+				/* Pack the new state for duplicate checking */
+				packMap(new_state, packedMap);
+
+				/* Check if this state has been visited before */
+				if (checkPresent(radixTree, packedMap, num_pieces) == PRESENT) {
+					/* Duplicate state found - prune this branch */
+					duplicatedNodes++;
+					free_state(new_state, init_data);
+					continue;
+				}
+
+				/* New unique state - insert into radix tree and enqueue */
+				insertRadixTree(radixTree, packedMap, num_pieces);
+				enqueued++;  // Count only unique states as generated
+				enqueue(queue, new_state);
+			}
+		}
+
+		/* Free current state after exploring all its successors */
+		free_state(current_state, init_data);
+	}
+
+	/* ===== CLEANUP REMAINING QUEUE STATES ===== */
+
+	/* If solution found early, free all unexplored states still in queue */
+	while (!is_empty_queue(queue)) {
+		gate_t* remaining_state = dequeue(queue);
+		free_state(remaining_state, init_data);
+	}
+	free_queue(queue);
+
+	/* ===== OUTPUT STATISTICS ===== */
+
+	elapsed = now() - start;
+	printf("Solution path: ");
+	printf("%s\n", soln ? soln : "");
+	printf("Execution time: %lf\n", elapsed);
+	printf("Expanded nodes: %d\n", dequeued);
+	printf("Generated nodes: %d\n", enqueued);
+	printf("Duplicated nodes: %d\n", duplicatedNodes);
+
+	/* Calculate auxiliary memory usage from radix tree */
+	int memoryUsage = queryRadixMemoryUsage(radixTree);
+	printf("Auxiliary memory usage (bytes): %d\n", memoryUsage);
+	printf("Number of pieces in the puzzle: %d\n", init_data->num_pieces);
+	printf("Number of steps in solution: %ld\n", soln ? strlen(soln)/2 : 0);
+
+	/* Count empty spaces in final solution state */
+	int emptySpaces = 0;
+	if (solution_state) {
+		int map_width = solution_state->num_chars_map / solution_state->lines;
+		int map_height = solution_state->lines;
+		for (int row = 0; row < map_height; row++) {
+			for (int col = 0; col < map_width; col++) {
+				if (solution_state->map[row][col] == ' ') {
+					emptySpaces++;
+				}
+			}
+		}
+	}
+
+	printf("Number of empty spaces: %d\n", emptySpaces);
+	printf("Solved by IW(%d)\n", w);
+	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
+
+	/* ===== FREE ALL ALLOCATED MEMORY ===== */
+
+	if (packedMap) {
+		free(packedMap);
+	}
+	if (radixTree) {
+		freeRadixTree(radixTree);
+	}
+	if (solution_state) {
+		free_state(solution_state, init_data);
+	}
+	if (soln) {
+		free((void*)soln);
+	}
+	free_initial_state(init_data);
+}
+
+/**
+ * Algorithm 3: Iterative Width (IW) with Multi-Tree Novelty Pruning
+ *
+ * This is an advanced IW search that iteratively increases the search width
+ * from 1 to n (number of pieces) until a solution is found. It uses multiple
+ * radix trees to implement novelty-based pruning, which detects when a state
+ * introduces a "novel" combination of piece positions.
+ *
+ * Key characteristics:
+ * - Iterative widening: starts with width 1, increases until solution found
+ * - Multi-tree novelty checking: maintains w radix trees for width-w search
+ * - Novelty pruning: only explores states that are novel at some subset size
+ * - Memory efficient: trees are freed between width iterations
+ * - Optimal for complex puzzles: finds minimal solutions efficiently
+ *
+ * Novelty concept:
+ * - A state is "novel at size s" if some subset of s pieces has never been
+ *   seen in those positions before (across all previously expanded states)
+ * - State is kept if novel at ANY size from 1 to w
+ * - Uses nCr (n-choose-r) radix trees to track piece subsets
+ *
+ * Example: For width w=2 with pieces [0,1,2]:
+ * - Trees track all 1-piece combinations: {0}, {1}, {2}
+ * - Trees track all 2-piece combinations: {0,1}, {0,2}, {1,2}
+ * - State is novel if any combination hasn't been seen before
+ */
+void algo3(gate_t *init_data) {
+	/* ===== INITIALIZATION ===== */
+
+	/* Allocate buffer for bit-packed state representation */
+	int packedBytes = getPackedSize(init_data);
+	unsigned char *packedMap = (unsigned char *) calloc(packedBytes, sizeof(unsigned char));
+	assert(packedMap);
+
+	/* Statistics tracking variables (accumulated across all width iterations) */
+	bool has_won = false;           // Whether a solution was found
+	int dequeued = 0;                // Total states expanded across all widths
+	int enqueued = 0;                // Total novel states generated across all widths
+	int duplicatedNodes = 0;         // Total non-novel states pruned
+	char *soln = NULL;               // Solution path string (e.g., "0u1d2l")
+	gate_t* solution_state = NULL;   // The winning state (kept for empty space counting)
+
+	/* Timing */
+	double start = now();
+	double elapsed;
+
+	/* Puzzle dimensions for radix tree construction */
+	int num_pieces = init_data->num_pieces;
+	int treeHeight = init_data->lines;
+	int treeWidth = init_data->num_chars_map / init_data->lines;
+
+	/* Current search width (will be set to the width that found solution) */
+	int w;
+
+	/* ===== ITERATIVE WIDTH SEARCH ===== */
+
+	/* Outer loop: Try increasing widths from 1 to num_pieces until solution found */
+	for (w = 1; w <= num_pieces; w++) {
+
+		/* ----- Width-w Iteration Setup ----- */
+
+		/* Create array of w radix trees (indexed 1 to w for subset sizes) */
 		struct radixTree** radixTrees = (struct radixTree**)malloc(sizeof(struct radixTree*) * (w + 1));
 		assert(radixTrees);
 
+		/* Initialize one radix tree for each subset size from 1 to w */
 		for (int i = 1; i <= w; i++) {
 			radixTrees[i] = getNewRadixTree(num_pieces, treeHeight, treeWidth);
 			assert(radixTrees[i]);
 		}
 
-		// Initialize with starting state
+		/* Create queue and initialize with starting state */
 		gate_t* duplicate = duplicate_state(init_data);
 		queue_t* queue = make_empty_queue();
 		enqueue(queue, duplicate);
-		enqueued++;
+		enqueued++;  // Count initial state
 
-		// Insert initial state into all radix trees
+		/* Mark initial state as visited in all radix trees (all subset sizes) */
 		packMap(duplicate, packedMap);
 		for (int s = 1; s <= w; s++) {
 			insertRadixTreenCr(radixTrees[s], packedMap, s);
 		}
 
+		/* ----- BFS Loop for Current Width ----- */
+
 		while (!is_empty_queue(queue)) {
+			/* Remove next state from queue for exploration */
 			gate_t* current_state = dequeue(queue);
 			dequeued++;
 
-			// Check if winning condition
+			/* Check if we've reached a winning state */
 			if (winning_state(*current_state)) {
-				// Found a solution - save the winning state and solution string
+				/* Save the solution path and winning state */
 				if (current_state->soln) {
 					size_t soln_len = strlen(current_state->soln);
 					char *solution_copy = (char *)malloc(soln_len + 1);
@@ -540,88 +617,92 @@ void algo3(gate_t *init_data) {
 				break;
 			}
 
-			// Try all moves for all pieces
+			/* Generate all possible successor states by trying all piece moves */
 			for (int piece = 0; piece < num_pieces; piece++) {
 				for (int direction = 0; direction < 4; direction++) {
 					gate_t* new_state = NULL;
-					int pieceMoved = applyAction(current_state, &new_state, pieceNames[piece], directions[direction]);
+
+					/* Attempt to move piece in specified direction */
+					int pieceMoved = applyAction(current_state, &new_state,
+					                             pieceNames[piece], directions[direction]);
 
 					if (!pieceMoved) {
-						// Move failed, free the node and continue
-						if (new_state) {
-							free_state(new_state, init_data);
-						}
+						/* Move invalid (blocked by wall/piece or out of bounds) */
+						if (new_state) free_state(new_state, init_data);
 						continue;
 					}
 
-					// Count generated nodes (only for successful moves)
-					enqueued++;
-
-					// Pack the new state
+					/* Pack the new state for novelty checking */
 					packMap(new_state, packedMap);
 
-					// Check novelty across all sizes from 1 to w
+					/* ----- Novelty Check Across All Subset Sizes ----- */
+
+					/* Check if state is novel at ANY subset size from 1 to w */
 					bool novel = false;
 					for (int s = 1; s <= w; s++) {
+						/* Check if this s-piece subset is novel (not seen before) */
 						if (checkPresentnCr(radixTrees[s], packedMap, s) == NOTPRESENT) {
-							novel = true;
+							novel = true;  // Novel at size s
 						}
+						/* Insert into tree regardless (marks this subset as seen) */
 						insertRadixTreenCr(radixTrees[s], packedMap, s);
 					}
 
 					if (!novel) {
+						/* State is not novel at any size - prune this branch */
 						duplicatedNodes++;
-						// Not novel, free the node and continue
 						free_state(new_state, init_data);
 						continue;
 					}
 
-					// Successfully moved and novel, enqueue the new state
+					/* State is novel - add to queue for exploration */
+					enqueued++;  // Count only novel states as generated
 					enqueue(queue, new_state);
 				}
 			}
 
-			// Free current state after processing
+			/* Free current state after exploring all its successors */
 			free_state(current_state, init_data);
 		}
 
-		// Free remaining states in queue (if solution was found early)
+		/* ----- Cleanup for Current Width Iteration ----- */
+
+		/* Free remaining unexplored states in queue */
 		while (!is_empty_queue(queue)) {
-			gate_t* remaining_state = dequeue(queue);
-			free_state(remaining_state, init_data);
+			free_state(dequeue(queue), init_data);
 		}
 		free_queue(queue);
 
-		// Free radix trees for this width
+		/* Free all radix trees for this width iteration */
 		for (int i = 1; i <= w; i++) {
 			freeRadixTree(radixTrees[i]);
 		}
 		free(radixTrees);
 
-		// If solution found, break out of width loop
+		/* If solution found at this width, stop iterating */
 		if (has_won) {
-			solved_width = w;
 			break;
 		}
 	}
 
-	/* Output statistics */
+	/* ===== OUTPUT STATISTICS ===== */
+
 	elapsed = now() - start;
 	printf("Solution path: ");
-	printf("%s\n", soln);
+	printf("%s\n", soln ? soln : "");
 	printf("Execution time: %lf\n", elapsed);
 	printf("Expanded nodes: %d\n", dequeued);
 	printf("Generated nodes: %d\n", enqueued);
 	printf("Duplicated nodes: %d\n", duplicatedNodes);
+
+	/* Memory usage is 0 since radix trees are already freed */
 	int memoryUsage = 0;
-	// Algorithm 3: Radix trees already freed in loop, memory usage not tracked
 	printf("Auxiliary memory usage (bytes): %d\n", memoryUsage);
 	printf("Number of pieces in the puzzle: %d\n", init_data->num_pieces);
-	printf("Number of steps in solution: %ld\n", strlen(soln)/2);
+	printf("Number of steps in solution: %ld\n", soln ? strlen(soln)/2 : 0);
+
+	/* Count empty spaces in final solution state */
 	int emptySpaces = 0;
-	/*
-	 * FILL IN: Add empty space check for your solution.
-	 */
 	if (solution_state) {
 		int map_width = solution_state->num_chars_map / solution_state->lines;
 		int map_height = solution_state->lines;
@@ -635,25 +716,19 @@ void algo3(gate_t *init_data) {
 	}
 
 	printf("Number of empty spaces: %d\n", emptySpaces);
-	printf("Solved by IW(%d)\n", solved_width);
+	printf("Solved by IW(%d)\n", w);
 	printf("Number of nodes expanded per second: %lf\n", (dequeued + 1) / elapsed);
 
-	/* Free associated memory. */
-	if(packedMap) {
-		free(packedMap);
-	}
-	/* Radix trees already freed in loop */
-	/* Free solution state */
-	if(solution_state) {
+	/* ===== FREE ALL ALLOCATED MEMORY ===== */
+
+	free(packedMap);
+	if (solution_state) {
 		free_state(solution_state, init_data);
 	}
-	/* Free solution string copy if allocated */
-	if(soln && strlen(soln) > 0) {
+	if (soln) {
 		free((void*)soln);
 	}
-	/* Free initial map. */
 	free_initial_state(init_data);
-
 }
 
 /**
