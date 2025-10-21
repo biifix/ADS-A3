@@ -367,8 +367,8 @@ void algo2(gate_t *init_data) {
 	double start = now();
 	double elapsed;
 
-	/* Search width: n+1 where n is number of pieces */
-	int w = init_data->num_pieces + 1;
+	/* Search width: n where n is number of pieces */
+	int w = init_data->num_pieces;
 
 	/* ===== DUPLICATE DETECTION SETUP ===== */
 
@@ -736,8 +736,8 @@ void algo3(gate_t *init_data) {
  */
 void find_solution(gate_t* init_data) {
 	// algo1(init_data);
-	// algo2(init_data);
-	algo3(init_data);
+	algo2(init_data);
+	// algo3(init_data);
 
 }
 

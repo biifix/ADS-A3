@@ -1,0 +1,10 @@
+Algorithm 1 (BFS without duplicate detection) could not solve this puzzle.
+The puzzle is too complex for naive BFS - it runs out of memory or takes too long
+due to the exponential state space explosion without duplicate state pruning.
+
+Puzzle: test_puzzles/capability12
+Status: Failed (killed due to excessive memory usage or timeout)
+
+This is expected behavior for Algorithm 1 on complex puzzles.
+Algorithm 2 (with radix tree) or Algorithm 3 (with novelty pruning)
+should be able to solve this puzzle efficiently.

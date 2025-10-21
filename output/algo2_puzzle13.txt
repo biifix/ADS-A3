@@ -1,0 +1,11 @@
+Solution path: 1d1d1r1r0u0u0u0u
+Execution time: 0.003457
+Expanded nodes: 220
+Generated nodes: 278
+Duplicated nodes: 849
+Auxiliary memory usage (bytes): 9036
+Number of pieces in the puzzle: 2
+Number of steps in solution: 8
+Number of empty spaces: 31
+Solved by IW(2)
+Number of nodes expanded per second: 63931.387268
