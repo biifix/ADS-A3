@@ -331,7 +331,7 @@ void algo1(gate_t *init_data) {
 /**
  * Algorithm 2: BFS with Radix Tree Duplicate Detection
  *
- * This is an optimized IW(n+1) search that uses a radix tree to detect
+ * This is an optimized IWna(n+1) search that uses a radix tree to detect
  * and eliminate duplicate states. It explores the state space more efficiently
  * than Algorithm 1 by avoiding revisiting previously seen states.
  *

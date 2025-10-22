@@ -1,0 +1,21 @@
+Results explanation (using figures)
+
+Time results
+- The performance plots (performance_metric1.png, performance_metric2.png, performance_metric3.png; algo1_performance.png, algo2_performance.png, algo3_performance.png; performance_analysis.png) show three distinct growth patterns. Algorithm 1’s points rise steeply and break off on harder instances, indicating explosive growth and frequent failure to complete. Algorithm 2 scales across all puzzles with steadily increasing nodes/time as instance difficulty grows. Algorithm 3’s curves are much flatter, solving all puzzles with far fewer node expansions.
+- Representative stats (see ANALYSIS.txt and time_memory_analysis.png):
+  • Algo1: avg 284,566 generated / 52,493 expanded; solved 11/16.
+  • Algo2: avg 708,516 generated / 653,439 expanded; solved 16/16; impassable3 ~10.3M expanded (~1011 s).
+  • Algo3: avg 12,167 generated / 11,917 expanded; solved 16/16; impassable3 ~155K expanded (~68.8 s).
+
+Space results
+- The space plots (space_algorithm_1.png, space_algorithm_2.png, space_algorithm_3.png, space_comparative.png) show Algorithm 1’s frontier blowing up when it succeeds, Algorithm 2’s memory dominated by the visited‑set (radix tree), and Algorithm 3 using a much smaller working set.
+- Illustrative numbers (ANALYSIS.txt): impassable3 — Algo2 ~358 MB auxiliary + large queue; Algo3 ~5 MB total (no persistent aux structures).
+
+Q1. Which time complexity growth does the data show, and does it match theory?
+- Algorithm 1: Data shows exponential‑like growth in time; fails on harder puzzles. Matches theory.
+- Algorithm 2: Data scales roughly linearly with the number of unique states; completes all puzzles. Matches theory.
+- Algorithm 3: Data shows markedly reduced growth (solutions found at small widths), far below exploring the full space. Matches the theoretical expectation of strong pruning via width bounds.
+
+Q2. What’s the memory (space) growth of Algorithms 2 and 3, and do they decrease the growth rate vs Algorithm 1?
+- Algorithm 2: Memory grows with the count of unique states because it stores a visited‑set (radix tree). This reduces growth rate compared to Algorithm 1’s exploding frontier; empirically much lower than Algo1’s would be on hard puzzles, though it can still be large (e.g., ~358 MB on impassable3).
+- Algorithm 3: Memory is bounded by the current width’s working set and freed between iterations, yielding substantially smaller space needs than both Algorithm 1 and 2. This further decreases the growth rate versus Algorithm 1 and also versus Algorithm 2 in practice.

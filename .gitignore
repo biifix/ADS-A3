@@ -1,0 +1,18 @@
+# Binaries
+gate
+
+# Object files
+*.o
+
+# macOS
+.DS_Store
+
+# Transient output and caches
+output/
+*.dSYM/
+*.log
+logs/
+tmp/
+__pycache__/
+.cache/
+*.swp
