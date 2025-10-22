@@ -68,6 +68,7 @@ gate_t count_lines(gate_t gate) {
 gate_t make_map(char const *path, gate_t gate) {
 	gate.buffer = open_map(path);
 	gate.num_pieces = 0;
+	gate.soln = NULL;
 	gate = count_lines(gate);
 	int k = 0;
 	int columns = 0;

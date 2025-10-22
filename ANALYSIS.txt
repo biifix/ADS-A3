@@ -6,6 +6,35 @@ This analysis examines the time and space complexity of three search algorithms
 based on empirical results from 16 test puzzles.
 
 ================================================================================
+THEORETICAL TIME COMPLEXITY REFERENCE
+================================================================================
+
+For a puzzle with:
+- n = number of pieces
+- k = number of steps (solution depth)
+- q = number of open squares on the board
+- w = width of search (for Algorithm 3)
+
+ALGORITHM 1 (Naive Approach):
+  Time Complexity: O((4n)^k)
+  - Branching factor of 4n (n pieces × 4 directions per piece)
+  - Exponential in solution depth k
+
+ALGORITHM 2 (Duplicate Checking with Radix Tree):
+  Time Complexity (unbounded board): O((3 + 4(n-1))^k)
+  Time Complexity (bounded board): O(n^q)
+  - For unbounded board: similar to Algorithm 1 but avoids re-exploring seen
+    states and immediate prior state, reducing effective branching to 3+4(n-1)
+  - For bounded board: polynomial, as each square can have at most one piece,
+    limiting total states to n^q
+
+ALGORITHM 3 (Iterative Width / Novelty Checking):
+  Time Complexity: O(nq^w) where w is the search width
+  - Best case: w << n, giving much better complexity than O(n^q)
+  - Worst case: w = n, giving O(n^(q+1)) due to re-exploring the puzzle w times
+  - Novelty checking dramatically reduces exploration space
+
+================================================================================
 1. TIME COMPLEXITY ANALYSIS
 ================================================================================
 
@@ -45,7 +74,8 @@ ALGORITHM 3 (Iterative Width):
 1.2 COMPARISON WITH THEORETICAL TIME COMPLEXITY
 ------------------------------------------------
 
-The empirical results MATCH theoretical predictions:
+The empirical results MATCH theoretical predictions (see THEORETICAL TIME
+COMPLEXITY REFERENCE section above):
 
 ALGORITHM 1 - Theoretical: O((4n)^k) where n = pieces, k = steps
 - Branching factor = 4n (n pieces × 4 directions per piece)
@@ -78,10 +108,10 @@ ALGORITHM 3 - Theoretical: O(nq^w) where w = width of search
 - Novelty pruning dramatically reduces exploration space
 
 CONCLUSION ON TIME COMPLEXITY:
-The data clearly shows:
+The data clearly shows (matching theoretical predictions from reference section):
 1. Algorithm 1: Exponential O((4n)^k) - matches theory ✓
    * Average 284K nodes for simple puzzles only
-2. Algorithm 2: Polynomial O(n^q) - matches theory ✓
+2. Algorithm 2: Polynomial O(n^q) for bounded board - matches theory ✓
    * Average 709K nodes, handles all puzzles
 3. Algorithm 3: O(nq^w) where w << n - matches theory ✓
    * Average only 12K nodes, 58x better than Algo2
@@ -219,13 +249,17 @@ space_algorithm_3.png shows only expanded nodes with no auxiliary overhead.
 ================================================================================
 
 TIME COMPLEXITY RESULTS:
+(Refer to THEORETICAL TIME COMPLEXITY REFERENCE section for full formulas)
+
 ✓ Algorithm 1: Exponential O((4n)^k) - confirmed by data
   * Only solved 11/16 puzzles (simple puzzles with small k)
   * Average 285K nodes for puzzles it could solve
-✓ Algorithm 2: Polynomial O(n^q) - confirmed by data
+✓ Algorithm 2: Polynomial O(n^q) for bounded board - confirmed by data
+  * Unbounded board: O((3 + 4(n-1))^k)
   * Solved all 16/16 puzzles
   * Average 709K nodes, max 11.2M for impassable3
 ✓ Algorithm 3: Polynomial O(nq^w) where w << n - confirmed by data
+  * Worst case when w=n: O(n^(q+1))
   * Solved all 16/16 puzzles at much lower widths
   * Average only 12K nodes (58x better than Algo2!)
   * Example: puzzle11 actual (3,012) ≈ theoretical (2,916) at w=2
@@ -255,10 +289,13 @@ BEST ALGORITHM: Algorithm 3 (Iterative Width)
 - Polynomial complexity O(nq^w) with w typically 1-4 vs n=1-8
 - Trades multiple width iterations for massive reduction in search space
 
-The empirical data strongly validates the theoretical predictions:
+The empirical data strongly validates the theoretical predictions (see THEORETICAL
+TIME COMPLEXITY REFERENCE section):
 - Algorithm 1's O((4n)^k) exponential growth confirmed by failures on complex puzzles
-- Algorithm 2's O(n^q) polynomial growth confirmed by close match to 8^14 theoretical bound
-- Algorithm 3's O(nq^w) complexity confirmed by solving puzzles at w=1,2,3,4 << n
+- Algorithm 2's O(n^q) polynomial growth (bounded board) confirmed by close match
+  to 8^14 theoretical bound; unbounded O((3 + 4(n-1))^k) also matches observations
+- Algorithm 3's O(nq^w) complexity confirmed by solving puzzles at w=1,2,3,4 << n;
+  worst case O(n^(q+1)) when w=n avoided by finding solutions early
 
 This demonstrates that iterative width search (Algorithm 3) is superior for
 solving Impassable Gate puzzles, both theoretically and empirically.
