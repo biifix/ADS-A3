@@ -1,9 +1,9 @@
 ================================================================================
-IMPASSABLE GATE AI ALGORITHMS - RESULTS ANALYSIS
+IMPASSABLE GATE - RESULT ANALYSIS
 ================================================================================
 
 This analysis examines the time and space complexity of three search algorithms
-based on empirical results from 16 test puzzles.
+based on results tested from 16 puzzles.
 
 ================================================================================
 THEORETICAL TIME COMPLEXITY REFERENCE
@@ -21,35 +21,32 @@ ALGORITHM 1 (Naive Approach):
   - Exponential in solution depth k
 
 ALGORITHM 2 (Duplicate Checking with Radix Tree):
-  Time Complexity (unbounded board): O((3 + 4(n-1))^k)
-  Time Complexity (bounded board): O(n^q)
-  - For unbounded board: similar to Algorithm 1 but avoids re-exploring seen
-    states and immediate prior state, reducing effective branching to 3+4(n-1)
-  - For bounded board: polynomial, as each square can have at most one piece,
+  Time Complexity: O(n^q)
+  - Bounded board: polynomial, as each square can have at most one piece,
     limiting total states to n^q
+  - Duplicate detection with radix tree avoids re-exploring seen states
 
 ALGORITHM 3 (Iterative Width / Novelty Checking):
   Time Complexity: O(nq^w) where w is the search width
-  - Best case: w << n, giving much better complexity than O(n^q)
+  - Best case: w << n, giving much better complexity than O(n^q) from Algo2
   - Worst case: w = n, giving O(n^(q+1)) due to re-exploring the puzzle w times
-  - Novelty checking dramatically reduces exploration space
+  - Novelty checking reduces exploration space
 
 ================================================================================
 1. TIME COMPLEXITY ANALYSIS
 ================================================================================
 
-1.1 OBSERVED TIME COMPLEXITY GROWTH
+1.1 OBSERVED TIME COMPLEXITY
 ------------------------------------
 
-From the performance graphs (performance_metric1.png, metric2.png, metric3.png)
-and statistical summary:
+From the performance graphs (time_complexity.png)
+and statistical summary (RESULTS_SUMMARY.txt):
 
 ALGORITHM 1 (No Duplicate Detection):
 - Generated nodes: min=1, max=3,043,088, avg=284,566
 - Expanded nodes: min=2, max=564,372, avg=52,493
 - Only completed 11/16 puzzles (simple puzzles only)
-- Shows EXPONENTIAL GROWTH with respect to theoretical complexity
-- Points in graphs show steep increase as complexity grows
+- Shows EXPONENTIAL GROWTH with in time complexity
 - Failed to solve complex puzzles (impassable1, impassable2, impassable3,
   and harder capability puzzles)
 
@@ -57,70 +54,49 @@ ALGORITHM 2 (Radix Tree Duplicate Detection):
 - Generated nodes: min=2, max=11,218,541, avg=708,516
 - Expanded nodes: min=2, max=10,352,979, avg=653,439
 - Completed all 16/16 puzzles
-- Shows POLYNOMIAL/LINEAR GROWTH relative to state space size
-- Better correlation with theoretical complexity metrics
+- Shows POLYNOMIAL growth 
 - Duplicate detection efficiency: 45.6% average (54.4% of attempts are duplicates)
-- For impassable3: took 1011 seconds, expanded 10.3M nodes
 
 ALGORITHM 3 (Iterative Width):
 - Generated nodes: min=2, max=157,621, avg=12,167
 - Expanded nodes: min=2, max=155,254, avg=11,917
 - Completed all 16/16 puzzles
-- Shows SIGNIFICANTLY REDUCED GROWTH compared to both Algorithm 1 and 2
-- Most efficient: average 12,167 nodes vs 708,516 (Algo2) vs 284,566 (Algo1)
+- Shows REDUCED GROWTH compared to both Algorithm 1 and 2
+- Most efficient: average 12,167 generated nodes vs 708,516 (Algo2) vs 284,566 (Algo1)
 - For impassable3: only 68.77 seconds vs 1011 seconds (Algo2)
 - Finds solutions at lower widths (IW(1) to IW(4) for most puzzles)
 
 1.2 COMPARISON WITH THEORETICAL TIME COMPLEXITY
 ------------------------------------------------
 
-The empirical results MATCH theoretical predictions (see THEORETICAL TIME
-COMPLEXITY REFERENCE section above):
-
 ALGORITHM 1 - Theoretical: O((4n)^k) where n = pieces, k = steps
-- Branching factor = 4n (n pieces × 4 directions per piece)
 - Observed: EXPONENTIAL growth confirmed
 - Data shows exponential increase in generated nodes with puzzle complexity
-- Performance degrades rapidly: couldn't solve puzzles with k > 13 steps
-- For puzzle with 4 pieces and 19 steps: (4×4)^19 = 16^19 ≈ 10^22 (infeasible)
-- Graph shows points diverging far from theoretical predictions for complex puzzles
+- Performance degrades: could not solve puzzles with k > 13 steps
 
-ALGORITHM 2 - Theoretical: O(n^q) where n = pieces, q = open squares (bounded board)
-- For unbounded board: O((3 + 4(n-1))^k) similar to Algorithm 1
-- For bounded board: O(n^q) as each square can have at most one piece
+ALGORITHM 2 - Theoretical: O(n^q) where n = pieces, q = open squares
 - Observed: POLYNOMIAL growth confirmed
 - Strong correlation between theoretical complexity and actual nodes generated
 - Successfully handles large state spaces (11M nodes for impassable3: 8^14 ≈ 4.4M)
-- Duplicate detection prevents exponential blowup
-- Actual nodes (11M) close to theoretical bound, showing effectiveness
+- Duplicate detection prevents timeout
 - Avoids re-exploring seen states, avoiding immediate prior state
 
 ALGORITHM 3 - Theoretical: O(nq^w) where w = width of search
-- Best case: w << n, complexity much better than O(n^q)
-- Worst case: w = n, complexity becomes O(n^(q+1)) due to re-exploring w times
 - Observed: SIGNIFICANTLY BETTER than both algorithms
-- Finds solutions at width w << n in most cases (IW(1) to IW(4) vs n=1 to n=8)
-- Average nodes generated is 58x fewer than Algorithm 2
-- Example: puzzle11 (4 pieces, 27 empty) solved at IW(2) instead of IW(4)
-  * Theoretical Algo2: 4^27 ≈ 2×10^16 (bounded by uniqueness to much less)
-  * Theoretical Algo3 at w=2: 4×27^2 = 2,916 states
-  * Actual Algo3: 3,012 nodes (matches theory closely!)
-- Novelty pruning dramatically reduces exploration space
+- Novelty checking dramatically reduces exploration space
 
 CONCLUSION ON TIME COMPLEXITY:
 The data clearly shows (matching theoretical predictions from reference section):
-1. Algorithm 1: Exponential O((4n)^k) - matches theory ✓
+1. Algorithm 1: Exponential O((4n)^k) - matches theory 
    * Average 284K nodes for simple puzzles only
-2. Algorithm 2: Polynomial O(n^q) for bounded board - matches theory ✓
+2. Algorithm 2: Polynomial O(n^q) - matches theory 
    * Average 709K nodes, handles all puzzles
-3. Algorithm 3: O(nq^w) where w << n - matches theory ✓
-   * Average only 12K nodes, 58x better than Algo2
+3. Algorithm 3: O(nq^w) where w << n - matches theory 
+   * Average only 12K nodes, better than Algo2
 
-The performance_metric2.png graph (Pieces × Steps × Empty × Width) shows the
+The time_complexity.png graph (Pieces × Steps × Empty × Width) shows the
 clearest correlation, with all three algorithms following their theoretical
-complexity curves on the log-log plot. Algorithm 3's performance especially
-validates the nq^w complexity, as actual nodes closely match theoretical
-predictions when w is small.
+complexity curves.
 
 ================================================================================
 2. SPACE COMPLEXITY ANALYSIS
@@ -129,173 +105,79 @@ predictions when w is small.
 2.1 OBSERVED SPACE COMPLEXITY GROWTH
 -------------------------------------
 
-From space complexity graphs (space_algorithm_*.png) and statistics:
+From space complexity graphs (space_algorithm_*.png) and statistical summary:
 
 ALGORITHM 1 (No Duplicate Detection):
 - Expanded nodes: min=2, max=564,372, avg=52,493
 - Auxiliary memory: 0 MB (no duplicate tracking structures)
 - Total space: Queue size only ≈ expanded nodes
-- Theoretical space: O((4n)^k) - exponential in solution depth k
-- Actual/Theoretical ratio: 0.34 (actual is lower due to early termination)
-- Space grows EXPONENTIALLY: BFS queue contains all nodes at frontier level
-- For depth k, queue size can reach (4n)^k nodes
+- Space grows EXPONENTIALLY
 
 ALGORITHM 2 (Radix Tree):
 - Expanded nodes: min=2, max=10,352,979, avg=653,439
 - Auxiliary memory: min=0, max=358.06 MB, avg=22.61 MB
 - Total space: Queue + Radix Tree ≈ expanded nodes + stored states
-- Theoretical space: O(n^q) - polynomial in pieces n and open squares q
-- For impassable3 (n=8, q=14): 8^14 ≈ 4.4M theoretical, 11.2M actual (includes duplicates detected)
-- Actual/Theoretical ratio: 0.37 for expanded nodes (good prediction)
-- Space grows POLYNOMIALLY with unique states: bounded by n^q
-- Radix tree stores all visited states to enable duplicate detection
+- Space grows POLYNOMIALLY bounded by n^q
 
 ALGORITHM 3 (Iterative Width):
 - Expanded nodes: min=2, max=155,254, avg=11,917
 - Auxiliary memory: 0 MB (trees freed after each width iteration)
 - Total space: Current width's queue and trees only
-- Theoretical space: O(nq^w) where w is current width being explored
-- For impassable3 at w=8: 8×14^8 ≈ 143M theoretical worst case
-- Actual: 155K nodes (much better because solution found at lower effective width)
-- Much smaller than Algorithm 2 due to iterative widening
-- Space is bounded by current width w, not full n
+- Space is bounded by current width.
 - Trees freed between width iterations keeps memory low
 
 2.2 DO ALGORITHMS 2 AND 3 DECREASE SPACE GROWTH RATE vs ALGORITHM 1?
 ----------------------------------------------------------------------
 
-THEORETICAL COMPARISON:
-
-Algorithm 1 Space Complexity: O((4n)^k)
-- Exponential in solution depth k
-- Branching factor = 4n (n pieces × 4 directions)
-- BFS queue contains all nodes at current depth level
-- No pruning, so explores entire breadth at each level
-- For puzzle with n=4 pieces and depth k=10:
-  Space ≈ (4×4)^10 = 16^10 ≈ 1 trillion nodes (infeasible)
-
-Algorithm 2 Space Complexity: O(n^q)
-- Polynomial in pieces n and open squares q
-- Stores all visited states in radix tree
-- Bounded board constraint: each square can have at most one piece
-- REDUCES growth rate from O((4n)^k) exponential to O(n^q) polynomial ✓
-- For n=8, q=14: 8^14 ≈ 4.4M states (manageable)
-- However, for large n or q, n^q can still be huge (impassable3: 11M actual)
-
-Algorithm 3 Space Complexity: O(nq^w) where w is current search width
-- Polynomial in q^w, but w << n in practice
-- Only explores subsets of size w, not all n pieces simultaneously
-- For n=8, q=14, w=2: 8×14^2 = 1,568 states (tiny!)
-- Worst case when w=n: O(n^(q+1)) due to iterating through all widths
-- Iterative widening: only store current width's data
-- Previous width's trees are freed, keeping memory bounded
-- FURTHER REDUCES growth rate beyond Algorithm 2 ✓
-  * Algo2: O(n^q) = O(8^14) ≈ 4.4M for impassable3
-  * Algo3: O(nq^w) = O(8×14^w) where w typically << n
-
-EMPIRICAL EVIDENCE:
-
-From space_comparative.png graph:
-- Algorithm 3 (green) consistently below Algorithm 2 (blue)
-- Algorithm 3 points cluster much lower on actual space axis
+From space_complexity.png graph:
+- Algorithm 3 (green) consistently below Algorithm 2 (blue) and Algorithm 1 (red)
 - For similar theoretical baseline complexity:
-  * Algo1 uses ~500K nodes (when it can solve)
+  * Algo1 uses ~500K nodes (when it can solve but fails to solve complex as it runs out of memory)
   * Algo2 uses ~10M nodes for hard puzzles
   * Algo3 uses ~150K nodes maximum
 
 Specific Example - impassable3 (8 pieces, 78 steps, 14 empty spaces):
-- Algorithm 1: FAILED (would need ~4^78 space - impossible)
+- Algorithm 1: FAILED (failed to solve)
 - Algorithm 2: 358 MB auxiliary + 10.3M expanded = ~375 MB total
 - Algorithm 3: 0 MB auxiliary + 155K expanded = ~5 MB total
-  → Algorithm 3 uses 75x LESS memory than Algorithm 2
-
-ANSWER TO QUESTION:
-
-YES, Algorithms 2 and 3 SIGNIFICANTLY DECREASE the space growth rate compared
-to Algorithm 1:
-
-1. ALGORITHM 2 vs ALGORITHM 1:
-   - Reduces from O((4n)^k) exponential to O(n^q) polynomial
-   - Growth rate decrease: EXPONENTIAL → POLYNOMIAL
-   - For n=8, k=78, q=14:
-     * Algo1: (32)^78 ≈ impossible (would need 10^117 nodes)
-     * Algo2: 8^14 ≈ 4.4M nodes (feasible!)
-   - Enables solving complex puzzles Algorithm 1 cannot
-   - Trade-off: requires auxiliary memory for radix tree (358 MB for impassable3)
-
-2. ALGORITHM 3 vs ALGORITHM 1:
-   - Reduces from O((4n)^k) to O(nq^w) where w << n
-   - Growth rate decrease: EXPONENTIAL → POLYNOMIAL (with lower degree)
-   - Best space efficiency of all three algorithms
-   - Frees auxiliary structures between width iterations
-   - For impassable3: ~5 MB vs impossible for Algo1
-
-3. ALGORITHM 3 vs ALGORITHM 2:
-   - Reduces from O(n^q) to O(nq^w) where w << n
-   - Growth rate decrease: POLYNOMIAL → LOWER-DEGREE POLYNOMIAL
-   - For n=8, q=14:
-     * Algo2: 8^14 ≈ 4.4M states
-     * Algo3 at w=2: 8×14^2 = 1,568 states (2,800x smaller!)
-   - ~75x less memory for hardest puzzle (5 MB vs 375 MB)
-   - Iterative widening constrains exploration to width-w subsets
-
-The space_algorithm_2.png graph clearly shows the radix tree (blue diamonds)
-tracking closely with expanded nodes (blue squares), confirming that auxiliary
-memory dominates space usage for Algorithm 2. In contrast, Algorithm 3's
-space_algorithm_3.png shows only expanded nodes with no auxiliary overhead.
+  → Algorithm 3 uses LESS memory than Algorithm 2
 
 ================================================================================
 3. SUMMARY AND CONCLUSIONS
 ================================================================================
 
 TIME COMPLEXITY RESULTS:
-(Refer to THEORETICAL TIME COMPLEXITY REFERENCE section for full formulas)
 
 ✓ Algorithm 1: Exponential O((4n)^k) - confirmed by data
   * Only solved 11/16 puzzles (simple puzzles with small k)
   * Average 285K nodes for puzzles it could solve
-✓ Algorithm 2: Polynomial O(n^q) for bounded board - confirmed by data
-  * Unbounded board: O((3 + 4(n-1))^k)
+✓ Algorithm 2: Polynomial O(n^q) - confirmed by data
   * Solved all 16/16 puzzles
   * Average 709K nodes, max 11.2M for impassable3
 ✓ Algorithm 3: Polynomial O(nq^w) where w << n - confirmed by data
   * Worst case when w=n: O(n^(q+1))
   * Solved all 16/16 puzzles at much lower widths
-  * Average only 12K nodes (58x better than Algo2!)
+  * Average only 12K nodes 
   * Example: puzzle11 actual (3,012) ≈ theoretical (2,916) at w=2
 
-→ Execution time: Algo3 (4.7s avg) << Algo1 (1.1s avg on simple) << Algo2 (63.5s avg)
+→ Execution time: Algo3 (4.7s avg) << Algo2 (63.5s avg) << Algo1 (1.1s avg on simple, but timeout for complex puzzles)
 
 SPACE COMPLEXITY RESULTS:
 ✓ Algorithm 1: Exponential O((4n)^k) - only solves 11/16 puzzles
-  * Failed on all complex puzzles due to exponential space blowup
-✓ Algorithm 2: Polynomial O(n^q) - REDUCES growth rate ✓
+  * Failed on all complex puzzles due to exponential memory timeout
+✓ Algorithm 2: Polynomial O(n^q) - REDUCES growth rate 
   * Reduces from EXPONENTIAL to POLYNOMIAL
   * Average 22.6 MB auxiliary memory, max 358 MB for impassable3
-✓ Algorithm 3: Polynomial O(nq^w) where w << n - FURTHER REDUCES ✓
+✓ Algorithm 3: Polynomial O(nq^w) where w << n
   * Reduces polynomial degree: O(n^q) → O(nq^w) where w << n
   * Average ~0 MB auxiliary (trees freed between widths)
-  * For impassable3: 5 MB vs Algo2's 375 MB (75x improvement!)
+  * For impassable3: 5 MB vs Algo2's 375 MB 
 
 → For hardest puzzle (n=8, q=14, k=78):
-  * Algo1: O((32)^78) - IMPOSSIBLE (10^117 nodes)
-  * Algo2: O(8^14) ≈ 4.4M - FEASIBLE (11.2M actual, 375 MB)
-  * Algo3: O(8×14^w) - EFFICIENT (155K actual at w=8, 5 MB)
+  * Algo1: O((32)^78) - INFEASIBLE (10^117 nodes)
+  * Algo2: O(8^14) ≈ 4.4M - FEASIBLE (11.2M actual nodes, 375 MB)
+  * Algo3: O(8×14^w) - EFFICIENT (155K actual nodes, 5 MB)
 
 BEST ALGORITHM: Algorithm 3 (Iterative Width)
 - Fastest execution time (4.7s average vs 63.5s for Algo2)
 - Lowest memory usage (~5 MB max vs 375 MB for Algo2)
-- Solves all puzzles efficiently by finding solutions at w << n
-- Polynomial complexity O(nq^w) with w typically 1-4 vs n=1-8
-- Trades multiple width iterations for massive reduction in search space
-
-The empirical data strongly validates the theoretical predictions (see THEORETICAL
-TIME COMPLEXITY REFERENCE section):
-- Algorithm 1's O((4n)^k) exponential growth confirmed by failures on complex puzzles
-- Algorithm 2's O(n^q) polynomial growth (bounded board) confirmed by close match
-  to 8^14 theoretical bound; unbounded O((3 + 4(n-1))^k) also matches observations
-- Algorithm 3's O(nq^w) complexity confirmed by solving puzzles at w=1,2,3,4 << n;
-  worst case O(n^(q+1)) when w=n avoided by finding solutions early
-
-This demonstrates that iterative width search (Algorithm 3) is superior for
-solving Impassable Gate puzzles, both theoretically and empirically.

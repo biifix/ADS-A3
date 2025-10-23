@@ -1,0 +1,202 @@
+================================================================================
+STATISTICAL SUMMARY OF IMPASSABLE GATE PUZZLE SOLVER RESULTS
+================================================================================
+
+
+================================================================================
+Algorithm 1
+================================================================================
+Total test cases: 11
+
+EXECUTION TIME (seconds):
+  Min:    0.000014
+  Max:    11.877293
+  Mean:   1.107441
+  Median: 0.000171
+  StdDev: 3.572478
+  Total:  12.181851
+
+EXPANDED NODES:
+  Min:    2
+  Max:    564,372
+  Mean:   52,493.00
+  Median: 21
+  StdDev: 169,791.15
+  Total:  577,423
+
+GENERATED NODES:
+  Min:    1
+  Max:    3,043,088
+  Mean:   284,565.55
+  Median: 63
+  StdDev: 915,075.03
+  Total:  3,130,221
+
+DUPLICATED NODES:
+  Min:    0
+  Max:    0
+  Mean:   0.00
+  Median: 0
+  StdDev: 0.00
+  Total:  0
+
+AUXILIARY MEMORY USAGE (bytes):
+  Min:    0
+  Max:    0
+  Mean:   0.00
+  Median: 0
+  StdDev: 0.00
+  Total:  0 (0.00 KB)
+
+SOLUTION STEPS:
+  Min:    1
+  Max:    8
+  Mean:   3.09
+  Median: 3
+  StdDev: 2.26
+
+NODES EXPANDED PER SECOND:
+  Min:    37,574.26
+  Max:    213,269.69
+  Mean:   108,904.19
+  Median: 110,376.42
+  StdDev: 59,118.60
+
+SOLVED BY IW WIDTH:
+  IW(2): 7 puzzles (63.6%)
+  IW(3): 2 puzzles (18.2%)
+  IW(4): 1 puzzles (9.1%)
+  IW(5): 1 puzzles (9.1%)
+
+
+================================================================================
+Algorithm 2
+================================================================================
+Total test cases: 16
+
+EXECUTION TIME (seconds):
+  Min:    0.000017
+  Max:    1011.315463
+  Mean:   63.454077
+  Median: 0.002430
+  StdDev: 252.763729
+  Total:  1015.265234
+
+EXPANDED NODES:
+  Min:    2
+  Max:    10,352,979
+  Mean:   653,439.00
+  Median: 156
+  StdDev: 2,586,586.63
+  Total:  10,455,024
+
+GENERATED NODES:
+  Min:    2
+  Max:    11,218,541
+  Mean:   708,515.94
+  Median: 197
+  StdDev: 2,802,722.99
+  Total:  11,336,255
+
+DUPLICATED NODES:
+  Min:    0
+  Max:    49,571,877
+  Mean:   3,131,402.06
+  Median: 566
+  StdDev: 12,384,357.61
+  Total:  50,102,433
+
+AUXILIARY MEMORY USAGE (bytes):
+  Min:    50
+  Max:    375,450,780
+  Mean:   23,710,973.19
+  Median: 6,404
+  StdDev: 93,798,937.73
+  Total:  379,375,571 (370483.96 KB)
+
+SOLUTION STEPS:
+  Min:    1
+  Max:    78
+  Mean:   15.38
+  Median: 4
+  StdDev: 24.44
+
+NODES EXPANDED PER SECOND:
+  Min:    10,237.14
+  Max:    174,762.67
+  Mean:   74,616.57
+  Median: 64,083.93
+  StdDev: 49,141.36
+
+SOLVED BY IW WIDTH:
+  IW(1): 7 puzzles (43.8%)
+  IW(2): 3 puzzles (18.8%)
+  IW(3): 1 puzzles (6.2%)
+  IW(4): 2 puzzles (12.5%)
+  IW(6): 2 puzzles (12.5%)
+  IW(8): 1 puzzles (6.2%)
+
+
+================================================================================
+Algorithm 3
+================================================================================
+Total test cases: 16
+
+EXECUTION TIME (seconds):
+  Min:    0.000015
+  Max:    68.769588
+  Mean:   4.668507
+  Median: 0.003119
+  StdDev: 17.122705
+  Total:  74.696107
+
+EXPANDED NODES:
+  Min:    2
+  Max:    155,254
+  Mean:   11,916.75
+  Median: 105
+  StdDev: 38,617.17
+  Total:  190,668
+
+GENERATED NODES:
+  Min:    2
+  Max:    157,621
+  Mean:   12,166.69
+  Median: 148
+  StdDev: 39,201.74
+  Total:  194,667
+
+DUPLICATED NODES:
+  Min:    0
+  Max:    677,588
+  Mean:   51,878.81
+  Median: 482
+  StdDev: 168,334.18
+  Total:  830,061
+
+AUXILIARY MEMORY USAGE (bytes):
+  Min:    0
+  Max:    0
+  Mean:   0.00
+  Median: 0
+  StdDev: 0.00
+  Total:  0 (0.00 KB)
+
+SOLUTION STEPS:
+  Min:    1
+  Max:    93
+  Mean:   16.81
+  Median: 4
+  StdDev: 27.32
+
+NODES EXPANDED PER SECOND:
+  Min:    2,257.61
+  Max:    199,728.76
+  Mean:   59,262.16
+  Median: 43,395.30
+  StdDev: 57,690.05
+
+SOLVED BY IW WIDTH:
+  IW(1): 8 puzzles (50.0%)
+  IW(2): 5 puzzles (31.2%)
+  IW(3): 3 puzzles (18.8%)

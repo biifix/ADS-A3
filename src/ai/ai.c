@@ -59,14 +59,16 @@ gate_t* duplicate_state(gate_t* gate) {
 
 	// copy map and map_save
 	for (int i = 0; i < gate->lines; i++) {
-		
-		duplicate -> map[i] = malloc(sizeof(char) * gate->num_chars_map);
+		// Get the actual length of this row (including null terminator)
+		size_t row_len = strlen(gate->map[i]) + 1;
+
+		duplicate -> map[i] = malloc(sizeof(char) * row_len);
 		assert(duplicate -> map[i]);
-		duplicate -> map_save[i] = malloc(sizeof(char) * gate->num_chars_map);
+		duplicate -> map_save[i] = malloc(sizeof(char) * row_len);
 		assert(duplicate -> map_save[i]);
 
-		memcpy(duplicate -> map[i], gate->map[i], gate->num_chars_map);
-		memcpy(duplicate -> map_save[i], gate->map_save[i], gate->num_chars_map);
+		memcpy(duplicate -> map[i], gate->map[i], row_len);
+		memcpy(duplicate -> map_save[i], gate->map_save[i], row_len);
 
 	}
 
