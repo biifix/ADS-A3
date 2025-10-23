@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Light'; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">================================================================================</p>
+<p class="p1">IMPASSABLE GATE - RESULT ANALYSIS</p>
+<p class="p1">================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">This analysis examines the time and space complexity of three search algorithms</p>
+<p class="p1">based on results tested from 16 puzzles.</p>
+<p class="p2"><br></p>
+<p class="p1">================================================================================</p>
+<p class="p1">THEORETICAL TIME COMPLEXITY REFERENCE</p>
+<p class="p1">================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">For a puzzle with:</p>
+<p class="p1">- n = number of pieces</p>
+<p class="p1">- k = number of steps (solution depth)</p>
+<p class="p1">- q = number of open squares on the board</p>
+<p class="p1">- w = width of search (for Algorithm 3)</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 1 (Naive Approach):</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Time Complexity: O((4n)^k)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Branching factor of 4n (n pieces × 4 directions per piece)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Exponential in solution depth k</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 2 (Duplicate Checking with Radix Tree):</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Time Complexity: O(n^q)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Bounded board: polynomial, as each square can have at most one piece,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>limiting total states to n^q</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Duplicate detection with radix tree avoids re-exploring seen states</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 3 (Iterative Width / Novelty Checking):</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Time Complexity: O(nq^w) where w is the search width</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Best case: w &lt;&lt; n, giving much better complexity than O(n^q) from Algo2</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Worst case: w = n, giving O(n^(q+1)) due to re-exploring the puzzle w times</p>
+<p class="p1"><span class="Apple-converted-space">  </span>- Novelty checking reduces exploration space</p>
+<p class="p2"><br></p>
+<p class="p1">================================================================================</p>
+<p class="p1">1. TIME COMPLEXITY ANALYSIS</p>
+<p class="p1">================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">1.1 OBSERVED TIME COMPLEXITY</p>
+<p class="p1">------------------------------------</p>
+<p class="p2"><br></p>
+<p class="p1">From the performance graphs (time_complexity.png)</p>
+<p class="p1">and statistical summary (RESULTS_SUMMARY.txt):</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 1 (No Duplicate Detection):</p>
+<p class="p1">- Generated nodes: min=1, max=3,043,088, avg=284,566</p>
+<p class="p1">- Expanded nodes: min=2, max=564,372, avg=52,493</p>
+<p class="p1">- Only completed 11/16 puzzles (simple puzzles only)</p>
+<p class="p1">- Shows EXPONENTIAL GROWTH with in time complexity</p>
+<p class="p1">- Failed to solve complex puzzles (impassable1, impassable2, impassable3,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>and harder capability puzzles)</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 2 (Radix Tree Duplicate Detection):</p>
+<p class="p1">- Generated nodes: min=2, max=11,218,541, avg=708,516</p>
+<p class="p1">- Expanded nodes: min=2, max=10,352,979, avg=653,439</p>
+<p class="p1">- Completed all 16/16 puzzles</p>
+<p class="p1">- Shows POLYNOMIAL growth<span class="Apple-converted-space"> </span></p>
+<p class="p1">- Duplicate detection efficiency: 45.6% average (54.4% of attempts are duplicates)</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 3 (Iterative Width):</p>
+<p class="p1">- Generated nodes: min=2, max=157,621, avg=12,167</p>
+<p class="p1">- Expanded nodes: min=2, max=155,254, avg=11,917</p>
+<p class="p1">- Completed all 16/16 puzzles</p>
+<p class="p1">- Shows REDUCED GROWTH compared to both Algorithm 1 and 2</p>
+<p class="p1">- Most efficient: average 12,167 generated nodes vs 708,516 (Algo2) vs 284,566 (Algo1)</p>
+<p class="p1">- For impassable3: only 68.77 seconds vs 1011 seconds (Algo2)</p>
+<p class="p1">- Finds solutions at lower widths (IW(1) to IW(4) for most puzzles)</p>
+<p class="p2"><br></p>
+<p class="p1">1.2 COMPARISON WITH THEORETICAL TIME COMPLEXITY</p>
+<p class="p1">------------------------------------------------</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 1 - Theoretical: O((4n)^k) where n = pieces, k = steps</p>
+<p class="p1">- Observed: EXPONENTIAL growth confirmed</p>
+<p class="p1">- Data shows exponential increase in generated nodes with puzzle complexity</p>
+<p class="p1">- Performance degrades: could not solve puzzles with k &gt; 13 steps</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 2 - Theoretical: O(n^q) where n = pieces, q = open squares</p>
+<p class="p1">- Observed: POLYNOMIAL growth confirmed</p>
+<p class="p1">- Strong correlation between theoretical complexity and actual nodes generated</p>
+<p class="p1">- Successfully handles large state spaces (11M nodes for impassable3: 8^14 ≈ 4.4M)</p>
+<p class="p1">- Duplicate detection prevents timeout</p>
+<p class="p1">- Avoids re-exploring seen states, avoiding immediate prior state</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 3 - Theoretical: O(nq^w) where w = width of search</p>
+<p class="p1">- Observed: SIGNIFICANTLY BETTER than both algorithms</p>
+<p class="p1">- Novelty checking dramatically reduces exploration space</p>
+<p class="p2"><br></p>
+<p class="p1">CONCLUSION ON TIME COMPLEXITY:</p>
+<p class="p1">The data clearly shows (matching theoretical predictions from reference section):</p>
+<p class="p1">1. Algorithm 1: Exponential O((4n)^k) - matches theory<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">   </span>* Average 284K nodes for simple puzzles only</p>
+<p class="p1">2. Algorithm 2: Polynomial O(n^q) - matches theory<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">   </span>* Average 709K nodes, handles all puzzles</p>
+<p class="p1">3. Algorithm 3: O(nq^w) where w &lt;&lt; n - matches theory<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">   </span>* Average only 12K nodes, better than Algo2</p>
+<p class="p2"><br></p>
+<p class="p1">The time_complexity.png graph (Pieces × Steps × Empty × Width) shows the</p>
+<p class="p1">clearest correlation, with all three algorithms following their theoretical</p>
+<p class="p1">complexity curves.</p>
+<p class="p2"><br></p>
+<p class="p1">================================================================================</p>
+<p class="p1">2. SPACE COMPLEXITY ANALYSIS</p>
+<p class="p1">================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">2.1 OBSERVED SPACE COMPLEXITY GROWTH</p>
+<p class="p1">-------------------------------------</p>
+<p class="p2"><br></p>
+<p class="p1">From space complexity graphs (space_algorithm_*.png) and statistical summary:</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 1 (No Duplicate Detection):</p>
+<p class="p1">- Expanded nodes: min=2, max=564,372, avg=52,493</p>
+<p class="p1">- Auxiliary memory: 0 MB (no duplicate tracking structures)</p>
+<p class="p1">- Total space: Queue size only ≈ expanded nodes</p>
+<p class="p1">- Space grows EXPONENTIALLY</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 2 (Radix Tree):</p>
+<p class="p1">- Expanded nodes: min=2, max=10,352,979, avg=653,439</p>
+<p class="p1">- Auxiliary memory: min=0, max=358.06 MB, avg=22.61 MB</p>
+<p class="p1">- Total space: Queue + Radix Tree ≈ expanded nodes + stored states</p>
+<p class="p1">- Space grows POLYNOMIALLY bounded by n^q</p>
+<p class="p2"><br></p>
+<p class="p1">ALGORITHM 3 (Iterative Width):</p>
+<p class="p1">- Expanded nodes: min=2, max=155,254, avg=11,917</p>
+<p class="p1">- Auxiliary memory: 0 MB (trees freed after each width iteration)</p>
+<p class="p1">- Total space: Current width's queue and trees only</p>
+<p class="p1">- Space is bounded by current width.</p>
+<p class="p1">- Trees freed between width iterations keeps memory low</p>
+<p class="p2"><br></p>
+<p class="p1">2.2 DO ALGORITHMS 2 AND 3 DECREASE SPACE GROWTH RATE vs ALGORITHM 1?</p>
+<p class="p1">----------------------------------------------------------------------</p>
+<p class="p2"><br></p>
+<p class="p1">From space_complexity.png graph:</p>
+<p class="p1">- Algorithm 3 (green) consistently below Algorithm 2 (blue) and Algorithm 1 (red)</p>
+<p class="p1">- For similar theoretical baseline complexity:</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo1 uses ~500K nodes (when it can solve but fails to solve complex as it runs out of memory)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo2 uses ~10M nodes for hard puzzles</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo3 uses ~150K nodes maximum</p>
+<p class="p2"><br></p>
+<p class="p1">Specific Example - impassable3 (8 pieces, 78 steps, 14 empty spaces):</p>
+<p class="p1">- Algorithm 1: FAILED (failed to solve)</p>
+<p class="p1">- Algorithm 2: 358 MB auxiliary + 10.3M expanded = ~375 MB total</p>
+<p class="p1">- Algorithm 3: 0 MB auxiliary + 155K expanded = ~5 MB total</p>
+<p class="p1"><span class="Apple-converted-space">  </span>→ Algorithm 3 uses LESS memory than Algorithm 2</p>
+<p class="p2"><br></p>
+<p class="p1">================================================================================</p>
+<p class="p1">3. SUMMARY AND CONCLUSIONS</p>
+<p class="p1">================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">TIME COMPLEXITY RESULTS:</p>
+<p class="p2"><br></p>
+<p class="p1">✓ Algorithm 1: Exponential O((4n)^k) - confirmed by data</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Only solved 11/16 puzzles (simple puzzles with small k)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Average 285K nodes for puzzles it could solve</p>
+<p class="p1">✓ Algorithm 2: Polynomial O(n^q) - confirmed by data</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Solved all 16/16 puzzles</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Average 709K nodes, max 11.2M for impassable3</p>
+<p class="p1">✓ Algorithm 3: Polynomial O(nq^w) where w &lt;&lt; n - confirmed by data</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Worst case when w=n: O(n^(q+1))</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Solved all 16/16 puzzles at much lower widths</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Average only 12K nodes<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Example: puzzle11 actual (3,012) ≈ theoretical (2,916) at w=2</p>
+<p class="p2"><br></p>
+<p class="p1">→ Execution time: Algo3 (4.7s avg) &lt;&lt; Algo2 (63.5s avg) &lt;&lt; Algo1 (1.1s avg on simple, but timeout for complex puzzles)</p>
+<p class="p2"><br></p>
+<p class="p1">SPACE COMPLEXITY RESULTS:</p>
+<p class="p1">✓ Algorithm 1: Exponential O((4n)^k) - only solves 11/16 puzzles</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Failed on all complex puzzles due to exponential memory timeout</p>
+<p class="p1">✓ Algorithm 2: Polynomial O(n^q) - REDUCES growth rate<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Reduces from EXPONENTIAL to POLYNOMIAL</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Average 22.6 MB auxiliary memory, max 358 MB for impassable3</p>
+<p class="p1">✓ Algorithm 3: Polynomial O(nq^w) where w &lt;&lt; n</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Reduces polynomial degree: O(n^q) → O(nq^w) where w &lt;&lt; n</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Average ~0 MB auxiliary (trees freed between widths)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* For impassable3: 5 MB vs Algo2's 375 MB<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p1">→ For hardest puzzle (n=8, q=14, k=78):</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo1: O((32)^78) - INFEASIBLE (10^117 nodes)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo2: O(8^14) ≈ 4.4M - FEASIBLE (11.2M actual nodes, 375 MB)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>* Algo3: O(8×14^w) - EFFICIENT (155K actual nodes, 5 MB)</p>
+<p class="p2"><br></p>
+<p class="p1">BEST ALGORITHM: Algorithm 3 (Iterative Width)</p>
+<p class="p1">- Fastest execution time (4.7s average vs 63.5s for Algo2)</p>
+<p class="p1">- Lowest memory usage (~5 MB max vs 375 MB for Algo2)</p>
+</body>
+</html>
